@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image and PDF Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.mjs" type="module"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Image & PDF Converter</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Panel: Upload and Controls -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <!-- File Upload -->
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50">
+                    <p class="text-gray-500">Drag & drop a file here, or click to select a file</p>
+                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf">
+                </div>
+
+                <!-- Controls -->
+                <div id="controls" class="mt-6 hidden">
+                    <!-- PDF Page Navigation -->
+                    <div id="pdf-controls" class="hidden mb-4">
+                        <label for="pdf-page" class="block text-sm font-medium text-gray-700">Page:</label>
+                        <div class="flex items-center space-x-2">
+                            <button id="pdf-prev" class="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
+                            <span id="pdf-page-num"></span> / <span id="pdf-page-count"></span>
+                            <button id="pdf-next" class="px-3 py-1 bg-gray-200 rounded-md">&gt;</button>
+                        </div>
+                    </div>
+
+                    <!-- Resize Options -->
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold mb-2 text-gray-800">Resize</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="width-input" class="block text-sm font-medium text-gray-700">Width</label>
+                                <input type="number" id="width-input" class="w-full border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="height-input" class="block text-sm font-medium text-gray-700">Height</label>
+                                <input type="number" id="height-input" class="w-full border-gray-300 rounded-md shadow-sm">
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <input type="checkbox" id="aspect-ratio-lock" class="rounded" checked>
+                            <label for="aspect-ratio-lock" class="ml-2 text-sm text-gray-600">Maintain aspect ratio</label>
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-gray-800">Export</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="format-select" class="block text-sm font-medium text-gray-700">Format</label>
+                                <select id="format-select" class="w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="png">PNG</option>
+                                    <option value="jpeg">JPEG</option>
+                                    <option value="webp">WEBP</option>
+                                </select>
+                            </div>
+                            <div id="quality-control">
+                                <label for="quality-slider" class="block text-sm font-medium text-gray-700">Quality</label>
+                                <input type="range" id="quality-slider" min="0" max="1" step="0.1" value="0.9" class="w-full">
+                            </div>
+                        </div>
+                        <button id="export-btn" class="w-full mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium">Export</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Viewer -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex justify-center items-center">
+                <canvas id="canvas-viewer" class="max-w-full max-h-full"></canvas>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import * as pdfjsLib from "https://mozilla.github.io/pdf.js/build/pdf.mjs";
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://mozilla.github.io/pdf.js/build/pdf.worker.mjs`;
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const controls = document.getElementById('controls');
+        const pdfControls = document.getElementById('pdf-controls');
+        const pdfPrev = document.getElementById('pdf-prev');
+        const pdfNext = document.getElementById('pdf-next');
+        const pdfPageNum = document.getElementById('pdf-page-num');
+        const pdfPageCount = document.getElementById('pdf-page-count');
+        const widthInput = document.getElementById('width-input');
+        const heightInput = document.getElementById('height-input');
+        const aspectRatioLock = document.getElementById('aspect-ratio-lock');
+        const formatSelect = document.getElementById('format-select');
+        const qualityControl = document.getElementById('quality-control');
+        const qualitySlider = document.getElementById('quality-slider');
+        const exportBtn = document.getElementById('export-btn');
+        const canvasViewer = document.getElementById('canvas-viewer');
+        const ctx = canvasViewer.getContext('2d');
+
+        let currentFile = null;
+        let pdfDoc = null;
+        let pageNum = 1;
+        let originalWidth, originalHeight;
+
+        // Event Listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-gray-50');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-gray-50');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-gray-50');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                handleFile(files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        pdfPrev.addEventListener('click', onPrevPage);
+        pdfNext.addEventListener('click', onNextPage);
+        widthInput.addEventListener('input', onDimensionChange);
+        heightInput.addEventListener('input', onDimensionChange);
+        formatSelect.addEventListener('change', onFormatChange);
+        exportBtn.addEventListener('click', exportFile);
+
+        function handleFile(file) {
+            currentFile = file;
+            controls.classList.remove('hidden');
+            if (file.type.includes('pdf')) {
+                pdfControls.classList.remove('hidden');
+                loadPdf(file);
+            } else {
+                pdfControls.classList.add('hidden');
+                loadImage(file);
+            }
+        }
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+                    widthInput.value = originalWidth;
+                    heightInput.value = originalHeight;
+                    canvasViewer.width = originalWidth;
+                    canvasViewer.height = originalHeight;
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function loadPdf(file) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const loadingTask = pdfjsLib.getDocument({ data: e.target.result });
+                pdfDoc = await loadingTask.promise;
+                pdfPageCount.textContent = pdfDoc.numPages;
+                pageNum = 1;
+                renderPage(pageNum);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function renderPage(num) {
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: 1.5 });
+            canvasViewer.height = viewport.height;
+            canvasViewer.width = viewport.width;
+            originalWidth = viewport.width;
+            originalHeight = viewport.height;
+            widthInput.value = originalWidth;
+            heightInput.value = originalHeight;
+
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            await page.render(renderContext).promise;
+            pdfPageNum.textContent = num;
+        }
+
+        function onPrevPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            renderPage(pageNum);
+        }
+
+        function onNextPage() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            renderPage(pageNum);
+        }
+
+        function onDimensionChange(e) {
+            if (!aspectRatioLock.checked) return;
+            const aspectRatio = originalWidth / originalHeight;
+            if (e.target.id === 'width-input') {
+                heightInput.value = Math.round(widthInput.value / aspectRatio);
+            } else {
+                widthInput.value = Math.round(heightInput.value * aspectRatio);
+            }
+        }
+
+        function onFormatChange() {
+            const format = formatSelect.value;
+            if (format === 'jpeg' || format === 'webp') {
+                qualityControl.classList.remove('hidden');
+            } else {
+                qualityControl.classList.add('hidden');
+            }
+        }
+
+        function exportFile() {
+            const format = formatSelect.value;
+            const quality = parseFloat(qualitySlider.value);
+            const width = parseInt(widthInput.value, 10);
+            const height = parseInt(heightInput.value, 10);
+
+            const exportCanvas = document.createElement('canvas');
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCanvas.width = width;
+            exportCanvas.height = height;
+
+            exportCtx.drawImage(canvasViewer, 0, 0, width, height);
+
+            const dataURL = exportCanvas.toDataURL(`image/${format}`, quality);
+            const link = document.createElement('a');
+            link.download = `converted.${format}`;
+            link.href = dataURL;
+            link.click();
+        }
+    </script>
+</body>
+</html>
