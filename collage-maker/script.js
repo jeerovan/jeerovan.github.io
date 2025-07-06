@@ -231,6 +231,14 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
     });
 
+    document.getElementById('export-webp-btn').addEventListener('click', () => {
+        const dataURL = canvas.toDataURL({ format: 'webp' });
+        const link = document.createElement('a');
+        link.download = 'collage.webp';
+        link.href = dataURL;
+        link.click();
+    });
+
     copyBtn.addEventListener('click', () => {
         canvas.toBlob((blob) => {
             navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
