@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Collage Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="toolbar">
+            <div class="toolbar-section">
+                <label for="template-select">Template:</label>
+                <select id="template-select">
+                    <option value="1:1">Instagram Post (1:1)</option>
+                    <option value="9:16">YouTube Shorts (9:16)</option>
+                    <option value="1:1">Square (1:1)</option>
+                    <option value="3:4">Portrait (3:4)</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <div id="custom-size-inputs" style="display: none;">
+                    <input type="number" id="custom-width" placeholder="Width">
+                    <span>x</span>
+                    <input type="number" id="custom-height" placeholder="Height">
+                    <button id="apply-custom-size">Apply</button>
+                </div>
+            </div>
+            <div class="toolbar-section">
+                <button id="undo-btn">Undo</button>
+                <button id="redo-btn">Redo</button>
+            </div>
+            <div class="toolbar-section">
+                <button id="export-png-btn">Export as PNG</button>
+                <button id="export-jpeg-btn">Export as JPEG</button>
+                <button id="copy-btn">Copy to Clipboard</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="side-panel">
+                <div class="panel-section">
+                    <h3>Import Images</h3>
+                    <input type="file" id="image-upload" multiple accept="image/*">
+                    <p>Or drag & drop images onto the canvas.</p>
+                </div>
+                <div class="panel-section">
+                    <h3>Image Settings</h3>
+                    <div id="image-settings-controls">
+                        <p>Select an image to see its settings.</p>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <h3>Image Filters</h3>
+                    <div id="filter-controls">
+                        <label>Grayscale: <input type="checkbox" id="grayscale-filter"></label><br>
+                        <label>Sepia: <input type="checkbox" id="sepia-filter"></label><br>
+                        <label>Blur: <input type="range" id="blur-filter" min="0" max="1" step="0.01" value="0"></label><br>
+                        <label>Brightness: <input type="range" id="brightness-filter" min="-1" max="1" step="0.01" value="0"></label><br>
+                        <label>Contrast: <input type="range" id="contrast-filter" min="-1" max="1" step="0.01" value="0"></label><br>
+                        <label>Saturation: <input type="range" id="saturation-filter" min="-1" max="1" step="0.01" value="0"></label><br>
+                        <button id="reset-filters-btn">Reset Filters</button>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <h3>Text Tool</h3>
+                    <div id="text-controls">
+                        <input type="text" id="text-input" placeholder="Enter text...">
+                        <button id="add-text-btn">Add Text</button>
+                        <select id="font-family-select">
+                            <option>Arial</option>
+                            <option>Verdana</option>
+                            <option>Georgia</option>
+                            <option>Courier New</option>
+                            <option>Lucida Console</option>
+                        </select>
+                        <input type="color" id="text-color-input" value="#000000">
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <h3>Layers</h3>
+                    <div id="layers-panel"></div>
+                </div>
+                 <div class="panel-section">
+                    <h3>Background</h3>
+                    <input type="color" id="bg-color-input" value="#ffffff">
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="collage-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
