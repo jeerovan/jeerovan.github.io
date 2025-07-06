@@ -103,15 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setCanvasSize(ratio) {
-        const container = document.querySelector('.canvas-container');
-        const containerWidth = container.offsetWidth - 40;
-        const containerHeight = container.offsetHeight - 40;
+        const container = document.getElementById('canvas-parent');
+        const containerWidth = container.offsetWidth - 48; // 24px padding on each side
+        const containerHeight = container.offsetHeight - 48; // 24px padding on each side
         let width, height;
 
         if (ratio === 'custom') {
-            // For custom, we can have a default or prompt user
-            width = 500;
-            height = 500;
+            width = parseInt(document.getElementById('custom-width').value, 10) || 500;
+            height = parseInt(document.getElementById('custom-height').value, 10) || 500;
         } else {
             const [ratioW, ratioH] = ratio.split(':').map(Number);
             if (containerWidth / containerHeight > ratioW / ratioH) {
@@ -124,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         canvas.setWidth(width);
         canvas.setHeight(height);
+        canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
         canvas.renderAll();
         saveState();
     }
@@ -135,9 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     templateSelect.addEventListener('change', (e) => {
         if (e.target.value === 'custom') {
-            customSizeInputs.style.display = 'flex';
+            customSizeInputs.classList.remove('hidden');
+            customSizeInputs.classList.add('flex');
         } else {
-            customSizeInputs.style.display = 'none';
+            customSizeInputs.classList.add('hidden');
+            customSizeInputs.classList.remove('flex');
             setCanvasSize(e.target.value);
         }
     });
