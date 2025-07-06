@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>CSS Animation Sequencer</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Roboto:wght@400;500&family=Fira+Code&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--primary-color: #676eff;
+				--secondary-color: #f0f2f5;
+				--border-color: #d9d9d9;
+				--text-color: #333;
+				--bg-color: #f8f9fa;
+				--header-font: 'Poppins', sans-serif;
+				--body-font: 'Roboto', sans-serif;
+			}
+
+			body {
+				font-family: var(--body-font);
+				color: var(--text-color);
+				background-color: var(--bg-color);
+				padding: 2rem;
+				margin: 0;
+			}
+
+			.container {
+				max-width: 1400px;
+				margin: 0 auto;
+			}
+
+			h1 {
+				font-family: var(--header-font);
+				font-size: 2.5rem;
+				color: var(--primary-color);
+				text-align: center;
+				margin-bottom: 0.5rem;
+			}
+
+			.subtitle {
+				text-align: center;
+				font-size: 1.1rem;
+				color: #666;
+				margin-bottom: 3rem;
+			}
+
+			.main-grid {
+				display: grid;
+				grid-template-columns: 300px 1fr;
+				gap: 2rem;
+			}
+
+			.controls-panel {
+				background-color: #fff;
+				padding: 1.5rem;
+				border-radius: 8px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+			}
+
+			.section-title {
+				font-family: var(--header-font);
+				font-size: 1.5rem;
+				color: var(--primary-color);
+				margin-bottom: 1.5rem;
+				border-bottom: 2px solid var(--secondary-color);
+				padding-bottom: 0.5rem;
+			}
+
+			.control-group {
+				margin-bottom: 1.5rem;
+			}
+
+			.control-group label {
+				display: block;
+				margin-bottom: 0.75rem;
+				font-weight: 500;
+			}
+
+			.file-upload-group {
+				text-align: center;
+			}
+
+			input[type='file'] {
+				display: none;
+			}
+
+			.custom-file-upload {
+				border: 1px solid var(--primary-color);
+				display: inline-block;
+				padding: 10px 20px;
+				cursor: pointer;
+				background-color: var(--primary-color);
+				color: white;
+				border-radius: 5px;
+				transition:
+					background-color 0.3s,
+					transform 0.2s;
+				width: 100%;
+				box-sizing: border-box;
+			}
+
+			.custom-file-upload:hover {
+				background-color: #555add;
+				transform: translateY(-2px);
+			}
+
+			.animation-list {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				max-height: 400px;
+				overflow-y: auto;
+				padding: 0.5rem;
+				border: 1px solid var(--border-color);
+				border-radius: 5px;
+			}
+
+			.checkbox-label {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.5rem;
+				cursor: pointer;
+				border-radius: 4px;
+				transition: background-color 0.2s;
+			}
+
+			.checkbox-label:hover {
+				background-color: var(--secondary-color);
+			}
+
+			.checkbox-label input {
+				accent-color: var(--primary-color);
+			}
+
+			.action-buttons {
+				display: flex;
+				gap: 1rem;
+				margin-top: 2rem;
+			}
+
+			.primary-button,
+			.secondary-button {
+				flex-grow: 1;
+				padding: 12px 20px;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				font-size: 1rem;
+				font-weight: 500;
+				transition:
+					background-color 0.3s,
+					transform 0.2s;
+			}
+
+			.primary-button {
+				background-color: var(--primary-color);
+				color: white;
+			}
+
+			.primary-button:hover:not(:disabled) {
+				background-color: #555add;
+				transform: translateY(-2px);
+			}
+
+			.primary-button:disabled {
+				background-color: #b5b5b5;
+				cursor: not-allowed;
+			}
+
+			.secondary-button {
+				background-color: #e0e0e0;
+				color: #333;
+			}
+
+			.secondary-button:hover {
+				background-color: #c7c7c7;
+			}
+
+			.output-panel {
+				display: flex;
+				flex-direction: column;
+				gap: 2rem;
+			}
+
+			.preview-container,
+			.code-container {
+				background-color: #fff;
+				border-radius: 8px;
+				padding: 1.5rem;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+			}
+
+			.image-box {
+				width: 100%;
+				height: 400px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border: 2px dashed var(--border-color);
+				border-radius: 8px;
+				overflow: hidden;
+				background-color: #fafafa;
+			}
+
+			.placeholder {
+				color: #888;
+				text-align: center;
+			}
+
+			.animated-image {
+				max-width: 100%;
+				max-height: 100%;
+				object-fit: contain;
+				animation-iteration-count: 1;
+				animation-fill-mode: forwards;
+				transform-origin: center;
+				animation-timing-function: ease-in-out;
+			}
+
+			.code-box {
+				background-color: #2d2d2d;
+				color: #f1f1f1;
+				padding: 1rem;
+				border-radius: 8px;
+				height: 400px;
+				overflow-y: auto;
+				font-family: 'Fira Code', monospace;
+			}
+
+			pre {
+				margin: 0;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+			}
+
+			@media (max-width: 1200px) {
+				.main-grid {
+					grid-template-columns: 1fr;
+				}
+				.controls-panel {
+					margin-bottom: 2rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<div class="container">
+				<h1>CSS Animation Sequencer</h1>
+				<p class="subtitle">Upload an image, chain animations, and get the code.</p>
+
+				<div class="main-grid">
+					<div class="controls-panel">
+						<h2 class="section-title">Controls</h2>
+						<div class="control-group file-upload-group">
+							<label for="file-upload" class="custom-file-upload"> Upload Image </label>
+							<input id="file-upload" type="file" accept="image/*" />
+						</div>
+
+						<div class="control-group">
+							<label>Choose Animations (in order):</label>
+							<div id="animation-list" class="animation-list">
+								<!-- Checkboxes will be inserted here by JavaScript -->
+							</div>
+						</div>
+						<div class="action-buttons">
+							<button id="play-button" class="primary-button">Play Animation</button>
+							<button id="reset-button" class="secondary-button">Reset</button>
+						</div>
+					</div>
+
+					<div class="output-panel">
+						<div class="preview-container">
+							<h2 class="section-title">Preview</h2>
+							<div id="image-box" class="image-box">
+								<div id="placeholder" class="placeholder">
+									<span>Upload an image to see the animation</span>
+								</div>
+								<img id="preview-image" src="" alt="User upload" class="animated-image" style="display: none;" />
+							</div>
+						</div>
+
+						<div class="code-container">
+							<h2 class="section-title">CSS Code</h2>
+							<div class="code-box">
+								<pre><code id="css-code"></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const animations = {
+					wobble: `@keyframes wobble {
+  0% { transform: translate3d(0, 0, 0); }
+  15% { transform: translate3d(-25%, 0, 0) rotate3d(0, 0, 1, -5deg); }
+  30% { transform: translate3d(20%, 0, 0) rotate3d(0, 0, 1, 3deg); }
+  45% { transform: translate3d(-15%, 0, 0) rotate3d(0, 0, 1, -3deg); }
+  60% { transform: translate3d(10%, 0, 0) rotate3d(0, 0, 1, 2deg); }
+  75% { transform: translate3d(-5%, 0, 0) rotate3d(0, 0, 1, -1deg); }
+  100% { transform: translate3d(0, 0, 0); }
+}`,
+					'rotate-center': `@keyframes rotate-center {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}`,
+					'slide-in-left': `@keyframes slide-in-left {
+  0% { transform: translateX(-1000px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}`,
+					'slide-out-right': `@keyframes slide-out-right {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(1000px); opacity: 0; }
+}`,
+					'fade-in': `@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}`,
+					'bounce-in-top': `@keyframes bounce-in-top {
+  0% { transform: translateY(-500px); animation-timing-function: ease-in; opacity: 0; }
+  38% { transform: translateY(0); animation-timing-function: ease-out; opacity: 1; }
+  55% { transform: translateY(-65px); animation-timing-function: ease-in; }
+  72% { transform: translateY(0); animation-timing-function: ease-out; }
+  81% { transform: translateY(-28px); animation-timing-function: ease-in; }
+  90% { transform: translateY(0); animation-timing-function: ease-out; }
+  95% { transform: translateY(-8px); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); animation-timing-function: ease-out; }
+}`,
+					pulse: `@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}`,
+					swing: `@keyframes swing {
+  20% { transform: rotate3d(0, 0, 1, 15deg); }
+  40% { transform: rotate3d(0, 0, 1, -10deg); }
+  60% { transform: rotate3d(0, 0, 1, 5deg); }
+  80% { transform: rotate3d(0, 0, 1, -5deg); }
+  100% { transform: rotate3d(0, 0, 1, 0deg); }
+}`
+				};
+
+				// Inject keyframes into the head
+				const styleSheet = document.createElement('style');
+				styleSheet.innerText = Object.values(animations).join('\n');
+				document.head.appendChild(styleSheet);
+
+				// DOM Elements
+				const fileInput = document.getElementById('file-upload');
+				const animationListDiv = document.getElementById('animation-list');
+				const playButton = document.getElementById('play-button');
+				const resetButton = document.getElementById('reset-button');
+				const imageBox = document.getElementById('image-box');
+				const placeholder = document.getElementById('placeholder');
+				const previewImage = document.getElementById('preview-image');
+				const cssCodeElement = document.getElementById('css-code');
+
+				let imageUrl = null;
+				let selectedAnimations = [];
+
+				// Populate animation list
+				Object.keys(animations).forEach((animName) => {
+					const label = document.createElement('label');
+					label.className = 'checkbox-label';
+
+					const checkbox = document.createElement('input');
+					checkbox.type = 'checkbox';
+					checkbox.value = animName;
+					checkbox.addEventListener('change', () => {
+						updateSelectedAnimations();
+						updateUI();
+					});
+
+					const text = document.createTextNode(
+						` ${animName.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`
+					);
+
+					label.appendChild(checkbox);
+					label.appendChild(text);
+					animationListDiv.appendChild(label);
+				});
+
+				function updateSelectedAnimations() {
+					selectedAnimations = Array.from(animationListDiv.querySelectorAll('input:checked')).map(
+						(cb) => cb.value
+					);
+				}
+
+				function updateUI() {
+					const hasImage = !!imageUrl;
+					const hasSelection = selectedAnimations.length > 0;
+
+					playButton.disabled = !hasImage || !hasSelection;
+
+					if (hasSelection) {
+						const animationName = selectedAnimations.join(', ');
+						const animationDuration = selectedAnimations.map(() => '2s').join(', ');
+						const animationDelay = selectedAnimations.map((_, i) => `${i * 2}s`).join(', ');
+
+						cssCodeElement.textContent = `.animated-image {\n  animation-name: ${animationName};\n  animation-duration: ${animationDuration};\n  animation-delay: ${animationDelay};\n  animation-iteration-count: 1;\n  animation-fill-mode: forwards;\n  transform-origin: center;\n  animation-timing-function: ease-in-out;\n}\n\n${selectedAnimations.map((anim) => animations[anim]).join('\n\n')}`;
+					} else {
+						cssCodeElement.textContent = '/* Select one or more animations to see the CSS code. */';
+					}
+				}
+
+				function playAnimation() {
+					if (selectedAnimations.length === 0) return;
+
+					// Reset animation by removing and re-adding the style properties
+					previewImage.style.animationName = 'none';
+
+					// Trigger reflow
+					void previewImage.offsetWidth;
+
+					previewImage.style.animationName = selectedAnimations.join(', ');
+					previewImage.style.animationDuration = selectedAnimations.map(() => '2s').join(', ');
+					previewImage.style.animationDelay = selectedAnimations.map((_, i) => `${i * 2}s`).join(', ');
+				}
+
+				fileInput.addEventListener('change', (event) => {
+					const file = event.target.files[0];
+					if (file) {
+						if (imageUrl) {
+							URL.revokeObjectURL(imageUrl);
+						}
+						imageUrl = URL.createObjectURL(file);
+						previewImage.src = imageUrl;
+						placeholder.style.display = 'none';
+						previewImage.style.display = 'block';
+						updateUI();
+						playAnimation();
+					}
+				});
+
+				playButton.addEventListener('click', playAnimation);
+
+				resetButton.addEventListener('click', () => {
+					animationListDiv.querySelectorAll('input:checked').forEach((cb) => (cb.checked = false));
+					selectedAnimations = [];
+					previewImage.style.animationName = 'none';
+					updateUI();
+				});
+
+				// Initial state
+				updateUI();
+			});
+		</script>
+	</body>
+</html>
